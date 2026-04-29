@@ -8,6 +8,7 @@ import org.springframework.http.ResponseEntity;
 import org.springframework.web.bind.annotation.*;
 
 import java.util.List;
+import java.util.Map;
 
 @RestController
 @RequestMapping("/api/inventory")
@@ -52,25 +53,24 @@ public class InventoryController {
         return ResponseEntity.ok(inventoryService.getSuppliersForProduct(productId));
     }
 
+    /**
+     * CLEAN & THIN: No try-catch needed.
+     * If productId is invalid, InventoryService throws ResourceNotFoundException,
+     * GlobalExceptionHandler catches it and returns 404.
+     */
     @PostMapping("/movement")
-    public ResponseEntity<String> recordMovement(
+    public ResponseEntity<Map<String, String>> recordMovement(
             @RequestParam Integer productId,
             @RequestParam Integer warehouseId,
             @RequestParam Integer change,
-            @RequestParam String type, // e.g., INBOUND, OUTBOUND, ADJUSTMENT
+            @RequestParam String type,
             @RequestParam(required = false) String remarks) {
 
-        try {
-            inventoryService.processMovement(productId, warehouseId, change, type, remarks);
-            return ResponseEntity.ok("Movement recorded successfully.");
-        } catch (IllegalArgumentException e) {
-            // Specifically, catching business logic failures (like negative stock)
-            log.warn("Inventory validation failed: {}", e.getMessage());
-            return ResponseEntity.badRequest().body(e.getMessage());
-        } catch (Exception e) {
-            log.error("Internal transaction failure", e);
-            return ResponseEntity.internalServerError().body("An unexpected error occurred.");
-        }
+        log.warn("REST Request: Recording {} movement for Product {}", type, productId);
+
+        inventoryService.processMovement(productId, warehouseId, change, type, remarks);
+
+        return ResponseEntity.ok(Map.of("message", "Movement recorded successfully."));
     }
 
     @GetMapping("/history/{productId}")

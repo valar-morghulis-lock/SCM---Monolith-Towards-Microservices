@@ -1,5 +1,7 @@
 package com.scm.domains.inventory.services;
 
+import com.scm.exceptions.domains.inventory.InvalidOperationException;
+import com.scm.exceptions.domains.inventory.ResourceNotFoundException;
 import org.jooq.DSLContext;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
@@ -43,14 +45,19 @@ public class InventoryService {
      * Highly specific filter for Category-based Master-Detail views.
      */
     public List<?> getProductsByCategory(Integer categoryId) {
-        return dsl.selectFrom(PRODUCTS)
+        var results = dsl.selectFrom(PRODUCTS)
                 .where(PRODUCTS.CATEGORY_ID.eq(categoryId))
                 .fetchMaps();
+
+        if (results.isEmpty()) {
+            throw new ResourceNotFoundException("Category", categoryId);
+        }
+        return results;
     }
 
     @Transactional
     public void processMovement(Integer productId, Integer warehouseId, Integer change, String type, String note) {
-        // Pessimistic Lock: Prevents race conditions during stock updates
+        // Pessimistic Lock
         var stockRecord = dsl.selectFrom(STOCK)
                 .where(STOCK.PRODUCT_ID.eq(productId))
                 .and(STOCK.WAREHOUSE_ID.eq(warehouseId))
@@ -58,14 +65,18 @@ public class InventoryService {
                 .fetchOne();
 
         if (stockRecord == null) {
-            throw new RuntimeException("No stock record found for Product ID: " + productId + " in Warehouse: " + warehouseId);
+            // Replaced generic RuntimeException
+            throw new ResourceNotFoundException("Stock Record", "P:" + productId + "-W:" + warehouseId);
         }
 
         int resultQty = stockRecord.getQuantity() + change;
 
-        // Business Rule: Standard SCM logic doesn't allow "Phantom" negative stock
         if (resultQty < 0) {
-            throw new IllegalArgumentException("Insufficient stock. Available: " + stockRecord.getQuantity() + ", Requested change: " + change);
+            // Replaced IllegalArgumentException with specific Business Exception
+            throw new InvalidOperationException(
+                    String.format("Insufficient stock. Available: %d, Requested change: %d", stockRecord.getQuantity(), change),
+                    "INVENTORY_INSUFFICIENT_STOCK"
+            );
         }
 
         stockRecord.setQuantity(resultQty);
