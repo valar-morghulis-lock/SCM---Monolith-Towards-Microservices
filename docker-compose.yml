@@ -1,0 +1,12 @@
+services:
+  db:
+    image: postgres:17
+    container_name: scm_postgres
+    environment:
+      POSTGRES_DB: scm_db
+      POSTGRES_USER: scm_user
+      POSTGRES_PASSWORD: scm_user
+    ports:
+      - "5432:5432"
+    volumes:
+      - ./init-db:/docker-entrypoint-initdb.d # Runs your SQL scripts on startup
