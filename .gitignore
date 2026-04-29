@@ -48,3 +48,15 @@ Thumbs.db
 # --- Log Files ---
 *.log
 logs/
+
+
+# --- Docker Data (Infrastructure) ---
+# Prevents local database and monitoring data from being pushed
+scm_postgres_data/
+prometheus_data/
+grafana_data/
+
+# --- jOOQ / Maven Generated Sources ---
+# We usually ignore generated code so it doesn't cause merge conflicts
+# Your team (or your CI/CD) should generate these during the build
+target/generated-sources/jooq/
