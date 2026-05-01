@@ -1,5 +1,6 @@
 package com.scm.domains.inventory.controllers;
 
+import com.scm.domains.inventory.dtos.StockSummaryDTO;
 import com.scm.domains.inventory.services.InventoryService;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
@@ -23,7 +24,7 @@ public class InventoryController {
      * Returns a global view of all products and their total stock across the network.
      */
     @GetMapping("/summary")
-    public ResponseEntity<List<?>> getGlobalSummary() {
+    public ResponseEntity<List<StockSummaryDTO>> getGlobalSummary() {
         log.warn("REST Request: Fetching global inventory summary");
         return ResponseEntity.ok(inventoryService.getGlobalStockSummary());
     }
@@ -54,7 +55,6 @@ public class InventoryController {
     }
 
     /**
-     * CLEAN & THIN: No try-catch needed.
      * If productId is invalid, InventoryService throws ResourceNotFoundException,
      * GlobalExceptionHandler catches it and returns 404.
      */
@@ -72,7 +72,9 @@ public class InventoryController {
 
         return ResponseEntity.ok(Map.of("message", "Movement recorded successfully."));
     }
-
+    /**
+     * Retrieve the movement history for a certain product, INBOUND/OUTBOUND, Quantity changed.
+     */
     @GetMapping("/history/{productId}")
     public ResponseEntity<List<?>> getHistory(@PathVariable Integer productId) {
         return ResponseEntity.ok(inventoryService.getProductMovementHistory(productId));

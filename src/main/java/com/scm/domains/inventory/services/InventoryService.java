@@ -1,5 +1,7 @@
 package com.scm.domains.inventory.services;
 
+import com.scm.domains.inventory.dtos.StockSummaryDTO;
+import com.scm.domains.inventory.mappers.InventoryMapper;
 import com.scm.exceptions.domains.inventory.InvalidOperationException;
 import com.scm.exceptions.domains.inventory.ResourceNotFoundException;
 import org.jooq.DSLContext;
@@ -21,12 +23,15 @@ public class InventoryService {
     @Autowired
     private DSLContext dsl;
 
+    @Autowired
+    private InventoryMapper inventoryMapper;
+
     /**
      * Aggregates total stock per product across all warehouses,
      * now including Category information.
      */
-    public List<?> getGlobalStockSummary() {
-        var query = dsl.select(
+    public List<StockSummaryDTO> getGlobalStockSummary() {
+        return dsl.select(
                         PRODUCTS.SKU,
                         PRODUCTS.NAME,
                         CATEGORIES.NAME.as("category"),
@@ -35,10 +40,8 @@ public class InventoryService {
                 .from(PRODUCTS)
                 .join(CATEGORIES).on(PRODUCTS.CATEGORY_ID.eq(CATEGORIES.ID))
                 .leftJoin(STOCK).on(PRODUCTS.ID.eq(STOCK.PRODUCT_ID))
-                .groupBy(PRODUCTS.SKU, PRODUCTS.NAME, CATEGORIES.NAME);
-
-        log.warn("Executing Stock Summary SQL: {}", query.getSQL());
-        return query.fetchMaps();
+                .groupBy(PRODUCTS.SKU, PRODUCTS.NAME, CATEGORIES.NAME)
+                .fetchInto(StockSummaryDTO.class); // jOOQ can map directly to Records!
     }
 
     /**
