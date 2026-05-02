@@ -1,9 +1,14 @@
 package com.scm.exceptions;
 
 
+import com.scm.exceptions.domains.inventory.InsufficientStockException;
+import jakarta.servlet.http.HttpServletRequest;
 import org.jooq.exception.DataAccessException;
+
+import lombok.extern.slf4j.Slf4j;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
+import org.springframework.http.HttpStatus;
 import org.springframework.http.ResponseEntity;
 import org.springframework.web.bind.MethodArgumentNotValidException;
 import org.springframework.web.bind.annotation.ControllerAdvice;
@@ -11,6 +16,7 @@ import org.springframework.web.bind.annotation.ExceptionHandler;
 import org.springframework.web.context.request.WebRequest;
 
 import java.time.LocalDateTime;
+import java.util.Map;
 import java.util.stream.Collectors;
 
 @ControllerAdvice
@@ -44,7 +50,39 @@ public class GlobalExceptionHandler {
     }
 
     private ResponseEntity<ErrorResponse> build(int status, String error, String msg, WebRequest req) {
-        var response = new ErrorResponse(LocalDateTime.now(), status, error, msg, req.getDescription(false).replace("uri=", ""));
+        // req.getDescription(false) handles the "uri=" prefixing for you
+        var response = new ErrorResponse(
+                LocalDateTime.now(),
+                status,
+                error,
+                msg,
+                req.getDescription(false).replace("uri=", "")
+        );
         return ResponseEntity.status(status).body(response);
+    }
+
+    @ExceptionHandler(InsufficientStockException.class)
+    public ResponseEntity<ErrorResponse> handleInsufficientStock(
+            InsufficientStockException ex,
+            WebRequest request) { // Changed from HttpServletRequest to WebRequest
+
+        // Using your preferred .warn level
+        log.warn("Inventory Conflict for Product {}: Requested {}, Available {}",
+                ex.getProductId(), ex.getRequestedQuantity(), ex.getAvailableQuantity());
+
+        String detailedMessage = String.format(
+                "%s (Requested: %d, Available: %d)",
+                ex.getMessage(),
+                ex.getRequestedQuantity() != null ? ex.getRequestedQuantity() : 0,
+                ex.getAvailableQuantity() != null ? ex.getAvailableQuantity() : 0
+        );
+
+        // Use your existing 'build' helper to keep the logic DRY
+        return build(
+                HttpStatus.CONFLICT.value(),
+                "INSUFFICIENT_STOCK",
+                detailedMessage,
+                request
+        );
     }
 }
