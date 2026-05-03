@@ -18,8 +18,42 @@ services:
       timeout: 5s
       retries: 5
 
+  # --- EVENT BROKER (KAFKA) ---
+  # Using KRaft mode (no Zookeeper required)
+  scm_kafka:
+    image: confluentinc/cp-kafka:7.5.0
+    container_name: scm_kafka
+    ports:
+      - "9092:9092"
+    environment:
+      # Required for KRaft mode
+      CLUSTER_ID: 'MkU3OEVBNTcwNTJENDM2Qk'   # <-- add this line
+
+      KAFKA_NODE_ID: 1
+      KAFKA_PROCESS_ROLES: 'broker,controller'
+      KAFKA_CONTROLLER_QUORUM_VOTERS: '1@localhost:29093'     # use localhost for self
+      KAFKA_CONTROLLER_LISTENER_NAMES: 'CONTROLLER'
+      KAFKA_LISTENERS: 'PLAINTEXT://0.0.0.0:29092,CONTROLLER://0.0.0.0:29093,EXTERNAL://0.0.0.0:9092'
+      KAFKA_ADVERTISED_LISTENERS: 'PLAINTEXT://scm_kafka:29092,EXTERNAL://localhost:9092'
+      KAFKA_LISTENER_SECURITY_PROTOCOL_MAP: 'CONTROLLER:PLAINTEXT,PLAINTEXT:PLAINTEXT,EXTERNAL:PLAINTEXT'
+      KAFKA_INTER_BROKER_LISTENER_NAME: 'PLAINTEXT'
+      KAFKA_OFFSETS_TOPIC_REPLICATION_FACTOR: 1
+      KAFKA_TRANSACTION_STATE_LOG_REPLICATION_FACTOR: 1
+      KAFKA_TRANSACTION_STATE_LOG_MIN_ISR: 1
+      KAFKA_LOG_DIRS: '/var/lib/kafka/data'
+
+      # Optional: keep if you want, but not used by the entrypoint
+      KAFKA_CLUSTER_ID: 'MkU3OEVBNTcwNTJENDM2Qk'
+    volumes:
+      - scm_kafka_data:/var/lib/kafka/data
+    healthcheck:
+      test: [ "CMD-SHELL", "kafka-topics --bootstrap-server localhost:29092 --list" ]
+      interval: 10s
+      timeout: 10s
+      retries: 5
+
   # --- DATABASE pgAdmin GUI ---
-  # Accessible at http://localhost:5050
+  # http://localhost:5050 (admin@scm.com / admin)
   pgadmin:
     image: dpage/pgadmin4
     container_name: scm_pgadmin
@@ -33,7 +67,6 @@ services:
         condition: service_healthy
 
   # --- METRICS COLLECTION (PROMETHEUS) ---
-  # Scraping data from Spring Boot Actuator
   prometheus:
     image: prom/prometheus:latest
     container_name: scm_prometheus
@@ -46,10 +79,13 @@ services:
       - '--config.file=/etc/prometheus/prometheus.yml'
       - '--storage.tsdb.path=/prometheus'
     depends_on:
-      - scm_db
+      scm_db:
+        condition: service_healthy
+      scm_kafka:
+        condition: service_healthy
 
   # --- VISUALIZATION (GRAFANA) ---
-  # Accessible at http://localhost:3000 (User/Pass: admin/admin)
+  # http://localhost:3000 (admin / admin)
   grafana:
     image: grafana/grafana:latest
     container_name: scm_grafana
@@ -64,5 +100,6 @@ services:
 
 volumes:
   scm_postgres_data:
+  scm_kafka_data:
   prometheus_data:
   grafana_data:

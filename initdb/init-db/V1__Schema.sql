@@ -142,3 +142,28 @@ CREATE TABLE shedlock (
   locked_by VARCHAR(255) NOT NULL,
   PRIMARY KEY (name)
 );
+
+
+--Kafka && Transactional Outbox Strategy
+
+-- Stores events to be published to Kafka in the same transaction as DB updates
+CREATE TABLE OUTBOX (
+    ID UUID PRIMARY KEY,
+    AGGREGATE_TYPE VARCHAR(50) NOT NULL, -- e.g., 'INVENTORY'
+    AGGREGATE_ID VARCHAR(50) NOT NULL,   -- e.g., external_order_id
+    TYPE VARCHAR(50) NOT NULL,           -- e.g., 'INVENTORY_RESERVED'
+    PAYLOAD JSONB NOT NULL,              -- The actual message data
+    STATUS VARCHAR(20) DEFAULT 'PENDING', -- PENDING, PROCESSED, FAILED
+    CREATED_AT TIMESTAMP WITH TIME ZONE DEFAULT CURRENT_TIMESTAMP,
+    PROCESSED_AT TIMESTAMP WITH TIME ZONE
+);
+
+-- Prevents duplicate processing of the same message (Inbox Pattern)
+CREATE TABLE PROCESSED_EVENTS (
+    EVENT_ID UUID PRIMARY KEY,
+    PROCESSED_AT TIMESTAMP WITH TIME ZONE DEFAULT CURRENT_TIMESTAMP
+);
+
+-- Facilitates fast lookup for the Outbox Relay service
+CREATE INDEX IDX_OUTBOX_PENDING ON OUTBOX (STATUS, CREATED_AT)
+WHERE STATUS = 'PENDING';
