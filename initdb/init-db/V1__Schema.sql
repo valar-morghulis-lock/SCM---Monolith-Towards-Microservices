@@ -131,3 +131,14 @@ WHERE STATUS = 'PENDING';
 -- Optimize time-series analysis for Tableau reporting
 CREATE INDEX idx_res_updated_at
 ON STOCK_RESERVATIONS (UPDATED_AT);
+
+
+
+-- ShedLock - Optimizing jobs running in a cluster.
+CREATE TABLE shedlock (
+  name VARCHAR(64) NOT NULL,
+  lock_until TIMESTAMP NOT NULL,
+  locked_at TIMESTAMP NOT NULL,
+  locked_by VARCHAR(255) NOT NULL,
+  PRIMARY KEY (name)
+);

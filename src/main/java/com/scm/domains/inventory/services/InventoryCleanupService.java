@@ -1,5 +1,6 @@
 package com.scm.domains.inventory.services;
 
+import net.javacrumbs.shedlock.spring.annotation.SchedulerLock;
 import org.jooq.DSLContext;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
@@ -25,11 +26,16 @@ public class InventoryCleanupService {
      * Safety Net: Releases stock for reservations that were never confirmed.
      * Runs daily at 6:00 AM, aligning with the circuit migration schedule.
      * Configured now to run every minute for testing purposes
+     * <p>
+     * - Lock is acquired, useful if we do have a clustered environment.
      */
-    @Scheduled(cron = "0 * * * * *")
+    @Scheduled(cron = "0 0 6 * * *")
+    @SchedulerLock(name = "inventory_cleanup_task",
+            lockAtLeastFor = "1m",
+            lockAtMostFor = "5m")
     @Transactional
     public void releaseExpiredReservations() {
-        log.warn("Starting scheduled inventory cleanup: Releasing expired reservations.");
+        log.warn("Attempting scheduled cleanup. Lock acquired.");
 
         int affectedRows = dsl.update(STOCK_RESERVATIONS)
                 .set(STOCK_RESERVATIONS.STATUS, "EXPIRED")
