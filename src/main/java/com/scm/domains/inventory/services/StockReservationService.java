@@ -14,7 +14,7 @@ import org.springframework.transaction.annotation.Transactional;
 
 import java.time.OffsetDateTime;
 
-import static com.scm.domains.generated.Tables.*;
+import static com.scm.domains.inventory.generated.Tables.*;
 
 @Service
 public class StockReservationService {

@@ -1,6 +1,6 @@
 package com.scm.domains.inventory.services;
 
-import com.scm.domains.generated.tables.records.OutboxRecord;
+import com.scm.domains.inventory.generated.tables.records.OutboxRecord;
 import net.javacrumbs.shedlock.spring.annotation.SchedulerLock;
 import org.jooq.DSLContext;
 import org.jooq.impl.DSL;
@@ -16,7 +16,7 @@ import java.time.OffsetDateTime;
 import java.util.UUID;
 import java.util.concurrent.TimeUnit;
 
-import static com.scm.domains.generated.Tables.OUTBOX;
+import static com.scm.domains.inventory.generated.Tables.OUTBOX;
 
 @Service
 public class InventoryOutboxRelay {

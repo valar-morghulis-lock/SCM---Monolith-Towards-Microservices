@@ -13,7 +13,7 @@ import org.springframework.transaction.annotation.Transactional;
 
 import java.util.List;
 
-import static com.scm.domains.generated.Tables.*;
+import static com.scm.domains.inventory.generated.Tables.*;
 import static org.jooq.impl.DSL.sum;
 
 @Service

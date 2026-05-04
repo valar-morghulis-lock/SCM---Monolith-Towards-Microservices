@@ -10,7 +10,7 @@ import org.springframework.transaction.annotation.Transactional;
 
 import java.time.OffsetDateTime;
 
-import static com.scm.domains.generated.Tables.STOCK_RESERVATIONS;
+import static com.scm.domains.inventory.generated.Tables.STOCK_RESERVATIONS;
 
 @Service
 public class InventoryCleanupService {

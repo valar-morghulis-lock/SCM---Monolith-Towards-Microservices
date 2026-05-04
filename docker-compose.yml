@@ -1,5 +1,5 @@
 services:
-  # --- RELATIONAL DATABASE ---
+  # --- INVENTORY SERVICE DATABASE ---
   scm_db:
     image: postgres:17-alpine
     container_name: scm_db
@@ -18,20 +18,37 @@ services:
       timeout: 5s
       retries: 5
 
+  # --- ORDER SERVICE DATABASE ---
+  ord_db:
+    image: postgres:17-alpine
+    container_name: ord_db
+    restart: always
+    environment:
+      POSTGRES_DB: ord_db
+      POSTGRES_USER: ord_user
+      POSTGRES_PASSWORD: ord_user
+    ports:
+      - "5433:5432"
+    volumes:
+      - ord_postgres_data:/var/lib/postgresql/data
+      - ./docker/ord_db/init.sql:/docker-entrypoint-initdb.d/init.sql
+    healthcheck:
+      test: ["CMD-SHELL", "pg_isready -U ord_user -d ord_db"]
+      interval: 10s
+      timeout: 5s
+      retries: 5
+
   # --- EVENT BROKER (KAFKA) ---
-  # Using KRaft mode (no Zookeeper required)
   scm_kafka:
     image: confluentinc/cp-kafka:7.5.0
     container_name: scm_kafka
     ports:
       - "9092:9092"
     environment:
-      # Required for KRaft mode
-      CLUSTER_ID: 'MkU3OEVBNTcwNTJENDM2Qk'   # <-- add this line
-
+      CLUSTER_ID: 'MkU3OEVBNTcwNTJENDM2Qk'
       KAFKA_NODE_ID: 1
       KAFKA_PROCESS_ROLES: 'broker,controller'
-      KAFKA_CONTROLLER_QUORUM_VOTERS: '1@localhost:29093'     # use localhost for self
+      KAFKA_CONTROLLER_QUORUM_VOTERS: '1@localhost:29093'
       KAFKA_CONTROLLER_LISTENER_NAMES: 'CONTROLLER'
       KAFKA_LISTENERS: 'PLAINTEXT://0.0.0.0:29092,CONTROLLER://0.0.0.0:29093,EXTERNAL://0.0.0.0:9092'
       KAFKA_ADVERTISED_LISTENERS: 'PLAINTEXT://scm_kafka:29092,EXTERNAL://localhost:9092'
@@ -41,19 +58,29 @@ services:
       KAFKA_TRANSACTION_STATE_LOG_REPLICATION_FACTOR: 1
       KAFKA_TRANSACTION_STATE_LOG_MIN_ISR: 1
       KAFKA_LOG_DIRS: '/var/lib/kafka/data'
-
-      # Optional: keep if you want, but not used by the entrypoint
-      KAFKA_CLUSTER_ID: 'MkU3OEVBNTcwNTJENDM2Qk'
     volumes:
       - scm_kafka_data:/var/lib/kafka/data
     healthcheck:
-      test: [ "CMD-SHELL", "kafka-topics --bootstrap-server localhost:29092 --list" ]
+      test: ["CMD-SHELL", "kafka-topics --bootstrap-server localhost:29092 --list"]
       interval: 10s
       timeout: 10s
       retries: 5
 
+  # --- KAFKA TOPIC INIT ---
+  kafka-init:
+    image: confluentinc/cp-kafka:7.5.0
+    container_name: scm_kafka_init
+    depends_on:
+      scm_kafka:
+        condition: service_healthy
+    entrypoint: ["/bin/sh", "-c"]
+    command:
+      - |
+        kafka-topics --bootstrap-server scm_kafka:29092 --create --if-not-exists --topic inventory-events --partitions 3 --replication-factor 1
+        echo 'Kafka topics created successfully'
+    restart: on-failure
+
   # --- DATABASE pgAdmin GUI ---
-  # http://localhost:5050 (admin@scm.com / admin)
   pgadmin:
     image: dpage/pgadmin4
     container_name: scm_pgadmin
@@ -64,6 +91,8 @@ services:
       - "5050:80"
     depends_on:
       scm_db:
+        condition: service_healthy
+      ord_db:
         condition: service_healthy
 
   # --- METRICS COLLECTION (PROMETHEUS) ---
@@ -81,11 +110,12 @@ services:
     depends_on:
       scm_db:
         condition: service_healthy
+      ord_db:
+        condition: service_healthy
       scm_kafka:
         condition: service_healthy
 
   # --- VISUALIZATION (GRAFANA) ---
-  # http://localhost:3000 (admin / admin)
   grafana:
     image: grafana/grafana:latest
     container_name: scm_grafana
@@ -100,6 +130,7 @@ services:
 
 volumes:
   scm_postgres_data:
+  ord_postgres_data:
   scm_kafka_data:
   prometheus_data:
   grafana_data:
