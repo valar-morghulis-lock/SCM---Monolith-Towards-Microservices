@@ -17,10 +17,10 @@
 
 	<properties>
 		<java.version>21</java.version>
-		<!-- Explicitly defining versions ensures the compiler plugin finds them correctly -->
 		<lombok.version>1.18.36</lombok.version>
 		<org.mapstruct.version>1.6.3</org.mapstruct.version>
 		<lombok-mapstruct-binding.version>0.2.0</lombok-mapstruct-binding.version>
+		<querydsl.version>5.1.0</querydsl.version>
 	</properties>
 
 	<dependencies>
@@ -37,6 +37,14 @@
 			<groupId>org.postgresql</groupId>
 			<artifactId>postgresql</artifactId>
 			<scope>runtime</scope>
+		</dependency>
+
+		<!-- Querydsl -->
+		<dependency>
+			<groupId>com.querydsl</groupId>
+			<artifactId>querydsl-jpa</artifactId>
+			<version>${querydsl.version}</version>
+			<classifier>jakarta</classifier>
 		</dependency>
 
 		<!-- Web & Validation -->
@@ -101,11 +109,29 @@
 			<scope>test</scope>
 		</dependency>
 
+		<dependency>
+			<groupId>org.springframework.boot</groupId>
+			<artifactId>spring-boot-starter-actuator</artifactId>
+		</dependency>
+		<dependency>
+			<groupId>io.micrometer</groupId>
+			<artifactId>micrometer-registry-prometheus</artifactId>
+		</dependency>
+
+
+		<dependency>
+			<groupId>org.springframework.boot</groupId>
+			<artifactId>spring-boot-testcontainers</artifactId>
+			<scope>test</scope>
+		</dependency>
+
+		<!-- Testcontainers core -->
+
+
 	</dependencies>
 
 	<build>
 		<plugins>
-			<!-- Compiler Configuration for Java 21 + Lombok + MapStruct -->
 			<plugin>
 				<groupId>org.apache.maven.plugins</groupId>
 				<artifactId>maven-compiler-plugin</artifactId>
@@ -113,11 +139,13 @@
 				<configuration>
 					<release>21</release>
 					<annotationProcessorPaths>
+						<!-- Lombok -->
 						<path>
 							<groupId>org.projectlombok</groupId>
 							<artifactId>lombok</artifactId>
 							<version>${lombok.version}</version>
 						</path>
+						<!-- MapStruct -->
 						<path>
 							<groupId>org.projectlombok</groupId>
 							<artifactId>lombok-mapstruct-binding</artifactId>
@@ -128,23 +156,33 @@
 							<artifactId>mapstruct-processor</artifactId>
 							<version>${org.mapstruct.version}</version>
 						</path>
+						<!-- Querydsl Annotation Processor -->
+						<path>
+							<groupId>com.querydsl</groupId>
+							<artifactId>querydsl-apt</artifactId>
+							<version>${querydsl.version}</version>
+							<classifier>jakarta</classifier>
+						</path>
+						<!-- Required for Querydsl to see Jakarta annotations -->
+						<path>
+							<groupId>jakarta.persistence</groupId>
+							<artifactId>jakarta.persistence-api</artifactId>
+							<version>3.1.0</version>
+						</path>
 					</annotationProcessorPaths>
 					<compilerArgs>
-						<!-- Automatically makes all MapStruct mappers Spring Beans -->
 						<arg>-Amapstruct.defaultComponentModel=spring</arg>
-						<!-- Opens compiler internals to allow Lombok to work on newer/EA JDKs -->
 						<arg>-J--add-opens=jdk.compiler/com.sun.tools.javac.code=ALL-UNNAMED</arg>
 						<arg>-J--add-opens=jdk.compiler/com.sun.tools.javac.comp=ALL-UNNAMED</arg>
 					</compilerArgs>
 				</configuration>
 			</plugin>
 
-			<!-- Dual-Database jOOQ Codegen -->
 			<plugin>
 				<groupId>org.jooq</groupId>
 				<artifactId>jooq-codegen-maven</artifactId>
+				<!-- [Rest of jOOQ executions remain unchanged] -->
 				<executions>
-					<!-- Execution 1: Inventory Domain (scm_db) -->
 					<execution>
 						<id>inventory-codegen</id>
 						<phase>generate-sources</phase>
@@ -171,8 +209,6 @@
 							</generator>
 						</configuration>
 					</execution>
-
-					<!-- Execution 2: Order Domain (ord_db) -->
 					<execution>
 						<id>order-codegen</id>
 						<phase>generate-sources</phase>

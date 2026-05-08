@@ -9,11 +9,13 @@ services:
       POSTGRES_USER: scm_user
       POSTGRES_PASSWORD: scm_user
     ports:
-      - "5432:5432"
+      - "5434:5432"              # changed from 5432 to avoid conflict with local PG on my machine
     volumes:
       - scm_postgres_data:/var/lib/postgresql/data
+      - ./docker/scm_db/V1__Schema.sql:/docker-entrypoint-initdb.d/01_schema.sql
+      - ./docker/scm_db/V2__Data.sql:/docker-entrypoint-initdb.d/02_data.sql
     healthcheck:
-      test: ["CMD-SHELL", "pg_isready -U scm_user -d scm_db"]
+      test: [ "CMD-SHELL", "pg_isready -U scm_user -d scm_db" ]
       interval: 10s
       timeout: 5s
       retries: 5
@@ -76,6 +78,7 @@ services:
     entrypoint: ["/bin/sh", "-c"]
     command:
       - |
+        kafka-topics --bootstrap-server scm_kafka:29092 --create --if-not-exists --topic order-events --partitions 3 --replication-factor 1
         kafka-topics --bootstrap-server scm_kafka:29092 --create --if-not-exists --topic inventory-events --partitions 3 --replication-factor 1
         echo 'Kafka topics created successfully'
     restart: on-failure

@@ -1,35 +1,43 @@
 package com.scm.config;
 
-import javax.sql.DataSource;
+import com.zaxxer.hikari.HikariDataSource;
 import org.jooq.DSLContext;
 import org.jooq.SQLDialect;
 import org.jooq.impl.DSL;
 import org.springframework.beans.factory.annotation.Qualifier;
-import org.springframework.boot.autoconfigure.condition.ConditionalOnMissingBean;
 import org.springframework.boot.autoconfigure.jdbc.DataSourceProperties;
 import org.springframework.boot.context.properties.ConfigurationProperties;
-import org.springframework.boot.jdbc.DataSourceBuilder;
 import org.springframework.context.annotation.Bean;
 import org.springframework.context.annotation.Configuration;
+
+import javax.sql.DataSource;
 
 @Configuration
 public class InventoryDbConfig {
 
-    @Bean
+    // ──  Binding spring.datasource.inventory.* properties ──────────────────
+    @Bean("inventoryDataSourceProperties")
     @ConfigurationProperties("spring.datasource.inventory")
     public DataSourceProperties inventoryDataSourceProperties() {
         return new DataSourceProperties();
     }
 
-    @Bean(name = "inventoryDataSource")
-    public DataSource dataSource() {
-        return inventoryDataSourceProperties()
-                .initializeDataSourceBuilder()
+    // ──  Building HikariCP pool ─────────────────────────────────────────────
+    // Fixed: renamed from dataSource() to inventoryDataSource() so the bean
+    // name matches the @Qualifier "inventoryDataSource" used in inventoryDSL()
+    @Bean("inventoryDataSource")
+    @ConfigurationProperties("spring.datasource.inventory.hikari")
+    public HikariDataSource inventoryDataSource(
+            @Qualifier("inventoryDataSourceProperties") DataSourceProperties props) {
+        return props.initializeDataSourceBuilder()
+                .type(HikariDataSource.class)
                 .build();
     }
 
-    @Bean(name = "inventoryDSL")
-    public DSLContext inventoryDSL(@Qualifier("inventoryDataSource") DataSource dataSource) {
+    // ── . jOOQ DSLContext pointing at scm_db ─────────────────────────────
+    @Bean("inventoryDSL")
+    public DSLContext inventoryDSL(
+            @Qualifier("inventoryDataSource") DataSource dataSource) {
         return DSL.using(dataSource, SQLDialect.POSTGRES);
     }
 }

@@ -25,6 +25,10 @@ public class KafkaProducerConfig {
         configMap.put(ProducerConfig.KEY_SERIALIZER_CLASS_CONFIG, StringSerializer.class);
         configMap.put(ProducerConfig.VALUE_SERIALIZER_CLASS_CONFIG, StringSerializer.class);
 
+        configMap.put(ProducerConfig.ENABLE_IDEMPOTENCE_CONFIG, true);
+        // With idempotence enabled, MAX_IN_FLIGHT must be ≤ 5
+        configMap.put(ProducerConfig.MAX_IN_FLIGHT_REQUESTS_PER_CONNECTION, 5);
+
         // High-reliability settings for SCM data
         configMap.put(ProducerConfig.ACKS_CONFIG, "all");
         configMap.put(ProducerConfig.RETRIES_CONFIG, 3);

@@ -8,11 +8,11 @@ import org.springframework.boot.autoconfigure.orm.jpa.HibernateJpaAutoConfigurat
 import org.springframework.scheduling.annotation.EnableScheduling;
 
 @SpringBootApplication(
-		scanBasePackages = {"com.scm.domains", "com.scm.config"},
+		scanBasePackages = "com.scm",
 		exclude = {
 				DataSourceAutoConfiguration.class,
-				DataSourceTransactionManagerAutoConfiguration.class,
-				HibernateJpaAutoConfiguration.class
+				HibernateJpaAutoConfiguration.class,
+				DataSourceTransactionManagerAutoConfiguration.class
 		}
 )
 @EnableScheduling
@@ -21,5 +21,4 @@ public class DomainsApplication {
 	public static void main(String[] args) {
 		SpringApplication.run(DomainsApplication.class, args);
 	}
-
 }

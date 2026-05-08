@@ -2,10 +2,8 @@ package com.scm.exceptions;
 
 
 import com.scm.exceptions.domains.inventory.InsufficientStockException;
-import jakarta.servlet.http.HttpServletRequest;
 import org.jooq.exception.DataAccessException;
-
-import lombok.extern.slf4j.Slf4j;
+import java.util.stream.Collectors;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 import org.springframework.http.HttpStatus;
@@ -16,8 +14,7 @@ import org.springframework.web.bind.annotation.ExceptionHandler;
 import org.springframework.web.context.request.WebRequest;
 
 import java.time.LocalDateTime;
-import java.util.Map;
-import java.util.stream.Collectors;
+
 
 @ControllerAdvice
 public class GlobalExceptionHandler {
@@ -84,5 +81,22 @@ public class GlobalExceptionHandler {
                 detailedMessage,
                 request
         );
+    }
+
+    @ExceptionHandler(com.fasterxml.jackson.databind.exc.InvalidFormatException.class)
+    public ResponseEntity<ErrorResponse> handleInvalidFormat(
+            com.fasterxml.jackson.databind.exc.InvalidFormatException ex,
+            WebRequest req) {
+
+        String field = ex.getPath().stream()
+                .map(ref -> ref.getFieldName())
+                .filter(java.util.Objects::nonNull)
+                .collect(Collectors.joining("."));
+
+        String msg = String.format("Invalid value for field '%s': %s", field, ex.getValue());
+
+        log.warn("Deserialization Failed: {}", msg); // Using your preferred .warn level
+
+        return build(400, "INVALID_FORMAT", msg, req);
     }
 }
