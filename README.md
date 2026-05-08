@@ -12,7 +12,7 @@ Messaging: Apache Kafka for reliable, asynchronous communication between Order, 
 
 
 🔄 Order Lifecycle (The Saga Flow)
-The system currently manages the distributed transaction flow illustrated in OrderToInventory.png.
+The system currently manages the following distributed transaction flow.
 
 Order Placement: OrderService saves order details and an ORDER_CREATED event in a single atomic transaction.
 
