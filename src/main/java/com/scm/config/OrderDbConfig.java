@@ -46,7 +46,9 @@ public class OrderDbConfig {
     @Bean("orderDataSource")
     public DataSource orderDataSource(
             @Qualifier("orderDataSourceProperties") DataSourceProperties props) {
-        return props.initializeDataSourceBuilder().build();
+        return props.initializeDataSourceBuilder()
+                .type(HikariDataSource.class)
+                .build();
     }
 
     @Primary

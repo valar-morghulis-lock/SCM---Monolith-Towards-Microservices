@@ -1,242 +1,257 @@
 <?xml version="1.0" encoding="UTF-8"?>
 <project xmlns="http://maven.apache.org/POM/4.0.0" xmlns:xsi="http://www.w3.org/2001/XMLSchema-instance"
-		 xsi:schemaLocation="http://maven.apache.org/POM/4.0.0 https://maven.apache.org/xsd/maven-4.0.0.xsd">
-	<modelVersion>4.0.0</modelVersion>
+         xsi:schemaLocation="http://maven.apache.org/POM/4.0.0 https://maven.apache.org/xsd/maven-4.0.0.xsd">
+    <modelVersion>4.0.0</modelVersion>
 
-	<parent>
-		<groupId>org.springframework.boot</groupId>
-		<artifactId>spring-boot-starter-parent</artifactId>
-		<version>3.4.2</version>
-		<relativePath/>
-	</parent>
+    <parent>
+        <groupId>org.springframework.boot</groupId>
+        <artifactId>spring-boot-starter-parent</artifactId>
+        <version>3.4.2</version>
+        <relativePath/>
+    </parent>
 
-	<groupId>com.scm</groupId>
-	<artifactId>domains</artifactId>
-	<version>0.0.1-SNAPSHOT</version>
-	<name>SCM Modular Domains</name>
+    <groupId>com.scm</groupId>
+    <artifactId>domains</artifactId>
+    <version>0.0.1-SNAPSHOT</version>
+    <name>SCM Modular Domains</name>
 
-	<properties>
-		<java.version>21</java.version>
-		<lombok.version>1.18.36</lombok.version>
-		<org.mapstruct.version>1.6.3</org.mapstruct.version>
-		<lombok-mapstruct-binding.version>0.2.0</lombok-mapstruct-binding.version>
-		<querydsl.version>5.1.0</querydsl.version>
-	</properties>
+    <properties>
+        <java.version>21</java.version>
+        <lombok.version>1.18.36</lombok.version>
+        <org.mapstruct.version>1.6.3</org.mapstruct.version>
+        <lombok-mapstruct-binding.version>0.2.0</lombok-mapstruct-binding.version>
+        <querydsl.version>5.1.0</querydsl.version>
+    </properties>
 
-	<dependencies>
-		<!-- Persistence: JPA & jOOQ -->
-		<dependency>
-			<groupId>org.springframework.boot</groupId>
-			<artifactId>spring-boot-starter-data-jpa</artifactId>
-		</dependency>
-		<dependency>
-			<groupId>org.springframework.boot</groupId>
-			<artifactId>spring-boot-starter-jooq</artifactId>
-		</dependency>
-		<dependency>
-			<groupId>org.postgresql</groupId>
-			<artifactId>postgresql</artifactId>
-			<scope>runtime</scope>
-		</dependency>
+    <dependencies>
+        <!-- Persistence: JPA & jOOQ -->
+        <dependency>
+            <groupId>org.springframework.boot</groupId>
+            <artifactId>spring-boot-starter-data-jpa</artifactId>
+        </dependency>
+        <dependency>
+            <groupId>org.springframework.boot</groupId>
+            <artifactId>spring-boot-starter-jooq</artifactId>
+        </dependency>
+        <dependency>
+            <groupId>org.postgresql</groupId>
+            <artifactId>postgresql</artifactId>
+            <scope>runtime</scope>
+        </dependency>
 
-		<!-- Querydsl -->
-		<dependency>
-			<groupId>com.querydsl</groupId>
-			<artifactId>querydsl-jpa</artifactId>
-			<version>${querydsl.version}</version>
-			<classifier>jakarta</classifier>
-		</dependency>
+        <!-- Querydsl -->
+        <dependency>
+            <groupId>com.querydsl</groupId>
+            <artifactId>querydsl-jpa</artifactId>
+            <version>${querydsl.version}</version>
+            <classifier>jakarta</classifier>
+        </dependency>
 
-		<!-- Web & Validation -->
-		<dependency>
-			<groupId>org.springframework.boot</groupId>
-			<artifactId>spring-boot-starter-web</artifactId>
-		</dependency>
-		<dependency>
-			<groupId>org.springframework.boot</groupId>
-			<artifactId>spring-boot-starter-validation</artifactId>
-		</dependency>
+        <!-- Web & Validation -->
+        <dependency>
+            <groupId>org.springframework.boot</groupId>
+            <artifactId>spring-boot-starter-web</artifactId>
+        </dependency>
+        <dependency>
+            <groupId>org.springframework.boot</groupId>
+            <artifactId>spring-boot-starter-validation</artifactId>
+        </dependency>
 
-		<!-- Messaging: Kafka -->
-		<dependency>
-			<groupId>org.springframework.kafka</groupId>
-			<artifactId>spring-kafka</artifactId>
-		</dependency>
+        <!-- Messaging: Kafka -->
+        <dependency>
+            <groupId>org.springframework.kafka</groupId>
+            <artifactId>spring-kafka</artifactId>
+        </dependency>
 
-		<!-- Utility: Lombok & MapStruct -->
-		<dependency>
-			<groupId>org.projectlombok</groupId>
-			<artifactId>lombok</artifactId>
-			<optional>true</optional>
-		</dependency>
-		<dependency>
-			<groupId>org.mapstruct</groupId>
-			<artifactId>mapstruct</artifactId>
-			<version>${org.mapstruct.version}</version>
-		</dependency>
+        <!-- Utility: Lombok & MapStruct -->
+        <dependency>
+            <groupId>org.projectlombok</groupId>
+            <artifactId>lombok</artifactId>
+            <optional>true</optional>
+        </dependency>
+        <dependency>
+            <groupId>org.mapstruct</groupId>
+            <artifactId>mapstruct</artifactId>
+            <version>${org.mapstruct.version}</version>
+        </dependency>
 
-		<!-- Scheduling & Concurrency Control -->
-		<dependency>
-			<groupId>net.javacrumbs.shedlock</groupId>
-			<artifactId>shedlock-spring</artifactId>
-			<version>5.10.0</version>
-		</dependency>
-		<dependency>
-			<groupId>net.javacrumbs.shedlock</groupId>
-			<artifactId>shedlock-provider-jdbc-template</artifactId>
-			<version>5.10.0</version>
-		</dependency>
+        <!-- Scheduling & Concurrency Control -->
+        <dependency>
+            <groupId>net.javacrumbs.shedlock</groupId>
+            <artifactId>shedlock-spring</artifactId>
+            <version>5.10.0</version>
+        </dependency>
+        <dependency>
+            <groupId>net.javacrumbs.shedlock</groupId>
+            <artifactId>shedlock-provider-jdbc-template</artifactId>
+            <version>5.10.0</version>
+        </dependency>
 
-		<!-- JSON & Observability -->
-		<dependency>
-			<groupId>org.springframework.boot</groupId>
-			<artifactId>spring-boot-starter-json</artifactId>
-		</dependency>
-		<dependency>
-			<groupId>io.micrometer</groupId>
-			<artifactId>micrometer-tracing-bridge-brave</artifactId>
-		</dependency>
+        <!-- JSON & Observability -->
+        <dependency>
+            <groupId>org.springframework.boot</groupId>
+            <artifactId>spring-boot-starter-json</artifactId>
+        </dependency>
+        <dependency>
+            <groupId>io.micrometer</groupId>
+            <artifactId>micrometer-tracing-bridge-brave</artifactId>
+        </dependency>
 
-		<!-- Testing -->
-		<dependency>
-			<groupId>org.springframework.boot</groupId>
-			<artifactId>spring-boot-starter-test</artifactId>
-			<scope>test</scope>
-		</dependency>
-		<dependency>
-			<groupId>com.h2database</groupId>
-			<artifactId>h2</artifactId>
-			<scope>test</scope>
-		</dependency>
+        <!-- Testing -->
+        <dependency>
+            <groupId>org.springframework.boot</groupId>
+            <artifactId>spring-boot-starter-test</artifactId>
+            <scope>test</scope>
+        </dependency>
+        <dependency>
+            <groupId>com.h2database</groupId>
+            <artifactId>h2</artifactId>
+            <scope>test</scope>
+        </dependency>
 
-		<dependency>
-			<groupId>org.springframework.boot</groupId>
-			<artifactId>spring-boot-starter-actuator</artifactId>
-		</dependency>
-		<dependency>
-			<groupId>io.micrometer</groupId>
-			<artifactId>micrometer-registry-prometheus</artifactId>
-		</dependency>
-
-
-		<dependency>
-			<groupId>org.springframework.boot</groupId>
-			<artifactId>spring-boot-testcontainers</artifactId>
-			<scope>test</scope>
-		</dependency>
-
-		<!-- Testcontainers core -->
+        <dependency>
+            <groupId>org.springframework.boot</groupId>
+            <artifactId>spring-boot-starter-actuator</artifactId>
+        </dependency>
+        <dependency>
+            <groupId>io.micrometer</groupId>
+            <artifactId>micrometer-registry-prometheus</artifactId>
+        </dependency>
 
 
-	</dependencies>
+        <dependency>
+            <groupId>org.springframework.boot</groupId>
+            <artifactId>spring-boot-testcontainers</artifactId>
+            <scope>test</scope>
+        </dependency>
 
-	<build>
-		<plugins>
-			<plugin>
-				<groupId>org.apache.maven.plugins</groupId>
-				<artifactId>maven-compiler-plugin</artifactId>
-				<version>3.13.0</version>
-				<configuration>
-					<release>21</release>
-					<annotationProcessorPaths>
-						<!-- Lombok -->
-						<path>
-							<groupId>org.projectlombok</groupId>
-							<artifactId>lombok</artifactId>
-							<version>${lombok.version}</version>
-						</path>
-						<!-- MapStruct -->
-						<path>
-							<groupId>org.projectlombok</groupId>
-							<artifactId>lombok-mapstruct-binding</artifactId>
-							<version>${lombok-mapstruct-binding.version}</version>
-						</path>
-						<path>
-							<groupId>org.mapstruct</groupId>
-							<artifactId>mapstruct-processor</artifactId>
-							<version>${org.mapstruct.version}</version>
-						</path>
-						<!-- Querydsl Annotation Processor -->
-						<path>
-							<groupId>com.querydsl</groupId>
-							<artifactId>querydsl-apt</artifactId>
-							<version>${querydsl.version}</version>
-							<classifier>jakarta</classifier>
-						</path>
-						<!-- Required for Querydsl to see Jakarta annotations -->
-						<path>
-							<groupId>jakarta.persistence</groupId>
-							<artifactId>jakarta.persistence-api</artifactId>
-							<version>3.1.0</version>
-						</path>
-					</annotationProcessorPaths>
-					<compilerArgs>
-						<arg>-Amapstruct.defaultComponentModel=spring</arg>
-						<arg>-J--add-opens=jdk.compiler/com.sun.tools.javac.code=ALL-UNNAMED</arg>
-						<arg>-J--add-opens=jdk.compiler/com.sun.tools.javac.comp=ALL-UNNAMED</arg>
-					</compilerArgs>
-				</configuration>
-			</plugin>
+        <!-- Testcontainers core -->
 
-			<plugin>
-				<groupId>org.jooq</groupId>
-				<artifactId>jooq-codegen-maven</artifactId>
-				<!-- [Rest of jOOQ executions remain unchanged] -->
-				<executions>
-					<execution>
-						<id>inventory-codegen</id>
-						<phase>generate-sources</phase>
-						<goals>
-							<goal>generate</goal>
-						</goals>
-						<configuration>
-							<jdbc>
-								<driver>org.postgresql.Driver</driver>
-								<url>jdbc:postgresql://localhost:5432/scm_db</url>
-								<user>scm_user</user>
-								<password>scm_user</password>
-							</jdbc>
-							<generator>
-								<database>
-									<name>org.jooq.meta.postgres.PostgresDatabase</name>
-									<includes>.*</includes>
-									<inputSchema>public</inputSchema>
-								</database>
-								<target>
-									<packageName>com.scm.domains.inventory.generated</packageName>
-									<directory>target/generated-sources/jooq-inventory</directory>
-								</target>
-							</generator>
-						</configuration>
-					</execution>
-					<execution>
-						<id>order-codegen</id>
-						<phase>generate-sources</phase>
-						<goals>
-							<goal>generate</goal>
-						</goals>
-						<configuration>
-							<jdbc>
-								<driver>org.postgresql.Driver</driver>
-								<url>jdbc:postgresql://localhost:5433/ord_db</url>
-								<user>ord_user</user>
-								<password>ord_user</password>
-							</jdbc>
-							<generator>
-								<database>
-									<name>org.jooq.meta.postgres.PostgresDatabase</name>
-									<includes>.*</includes>
-									<inputSchema>public</inputSchema>
-								</database>
-								<target>
-									<packageName>com.scm.domains.order.generated</packageName>
-									<directory>target/generated-sources/jooq-order</directory>
-								</target>
-							</generator>
-						</configuration>
-					</execution>
-				</executions>
-			</plugin>
-		</plugins>
-	</build>
+
+        <dependency>
+            <groupId>io.github.resilience4j</groupId>
+            <artifactId>resilience4j-spring-boot3</artifactId>
+            <version>2.2.0</version>
+        </dependency>
+        <dependency>
+            <groupId>org.springframework.boot</groupId>
+            <artifactId>spring-boot-starter-aop</artifactId>
+        </dependency>
+
+
+    </dependencies>
+
+    <build>
+        <plugins>
+            <plugin>
+                <groupId>org.springframework.boot</groupId>
+                <artifactId>spring-boot-maven-plugin</artifactId>
+            </plugin>
+            <plugin>
+                <groupId>org.apache.maven.plugins</groupId>
+                <artifactId>maven-compiler-plugin</artifactId>
+                <version>3.13.0</version>
+                <configuration>
+                    <release>21</release>
+                    <annotationProcessorPaths>
+                        <!-- Lombok -->
+                        <path>
+                            <groupId>org.projectlombok</groupId>
+                            <artifactId>lombok</artifactId>
+                            <version>${lombok.version}</version>
+                        </path>
+                        <!-- MapStruct -->
+                        <path>
+                            <groupId>org.projectlombok</groupId>
+                            <artifactId>lombok-mapstruct-binding</artifactId>
+                            <version>${lombok-mapstruct-binding.version}</version>
+                        </path>
+                        <path>
+                            <groupId>org.mapstruct</groupId>
+                            <artifactId>mapstruct-processor</artifactId>
+                            <version>${org.mapstruct.version}</version>
+                        </path>
+                        <!-- Querydsl Annotation Processor -->
+                        <path>
+                            <groupId>com.querydsl</groupId>
+                            <artifactId>querydsl-apt</artifactId>
+                            <version>${querydsl.version}</version>
+                            <classifier>jakarta</classifier>
+                        </path>
+                        <!-- Required for Querydsl to see Jakarta annotations -->
+                        <path>
+                            <groupId>jakarta.persistence</groupId>
+                            <artifactId>jakarta.persistence-api</artifactId>
+                            <version>3.1.0</version>
+                        </path>
+                    </annotationProcessorPaths>
+                    <compilerArgs>
+                        <arg>-Amapstruct.defaultComponentModel=spring</arg>
+                        <arg>-J--add-opens=jdk.compiler/com.sun.tools.javac.code=ALL-UNNAMED</arg>
+                        <arg>-J--add-opens=jdk.compiler/com.sun.tools.javac.comp=ALL-UNNAMED</arg>
+                    </compilerArgs>
+                </configuration>
+            </plugin>
+
+            <plugin>
+                <groupId>org.jooq</groupId>
+                <artifactId>jooq-codegen-maven</artifactId>
+                <!-- [Rest of jOOQ executions remain unchanged] -->
+                <executions>
+                    <execution>
+                        <id>inventory-codegen</id>
+                        <phase>generate-sources</phase>
+                        <goals>
+                            <goal>generate</goal>
+                        </goals>
+                        <configuration>
+                            <jdbc>
+                                <driver>org.postgresql.Driver</driver>
+                                <url>jdbc:postgresql://localhost:5432/scm_db</url>
+                                <user>scm_user</user>
+                                <password>scm_user</password>
+                            </jdbc>
+                            <generator>
+                                <database>
+                                    <name>org.jooq.meta.postgres.PostgresDatabase</name>
+                                    <includes>.*</includes>
+                                    <inputSchema>public</inputSchema>
+                                </database>
+                                <target>
+                                    <packageName>com.scm.domains.inventory.generated</packageName>
+                                    <directory>target/generated-sources/jooq-inventory</directory>
+                                </target>
+                            </generator>
+                        </configuration>
+                    </execution>
+                    <execution>
+                        <id>order-codegen</id>
+                        <phase>generate-sources</phase>
+                        <goals>
+                            <goal>generate</goal>
+                        </goals>
+                        <configuration>
+                            <jdbc>
+                                <driver>org.postgresql.Driver</driver>
+                                <url>jdbc:postgresql://localhost:5433/ord_db</url>
+                                <user>ord_user</user>
+                                <password>ord_user</password>
+                            </jdbc>
+                            <generator>
+                                <database>
+                                    <name>org.jooq.meta.postgres.PostgresDatabase</name>
+                                    <includes>.*</includes>
+                                    <inputSchema>public</inputSchema>
+                                </database>
+                                <target>
+                                    <packageName>com.scm.domains.order.generated</packageName>
+                                    <directory>target/generated-sources/jooq-order</directory>
+                                </target>
+                            </generator>
+                        </configuration>
+                    </execution>
+                </executions>
+            </plugin>
+        </plugins>
+    </build>
 </project>

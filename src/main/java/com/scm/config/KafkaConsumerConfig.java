@@ -49,16 +49,11 @@ public class KafkaConsumerConfig {
         var factory = new ConcurrentKafkaListenerContainerFactory<String, String>();
         factory.setConsumerFactory(consumerFactory());
 
-        // Manual offset commit — only commits after listener method returns cleanly
+        // ADD THIS: Prevents context errors if Kafka is down
+        factory.getContainerProperties().setMissingTopicsFatal(false);
+
         factory.getContainerProperties().setAckMode(ContainerProperties.AckMode.RECORD);
-
-        // Retry failed messages 3 times with 1s gap before giving up
-        // In production: wire a DeadLetterPublishingRecoverer here instead
-        factory.setCommonErrorHandler(
-                new DefaultErrorHandler(new FixedBackOff(1000L, 3L))
-        );
-
-        // Number of consumer threads — match your topic partition count (3)
+        factory.setCommonErrorHandler(new DefaultErrorHandler(new FixedBackOff(1000L, 3L)));
         factory.setConcurrency(3);
 
         return factory;

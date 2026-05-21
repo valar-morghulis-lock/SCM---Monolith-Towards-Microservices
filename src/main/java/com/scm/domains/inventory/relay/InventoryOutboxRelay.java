@@ -35,8 +35,8 @@ public class InventoryOutboxRelay {
         this.objectMapper = objectMapper;
     }
 
-    @Scheduled(fixedDelay = 2000)
-    @SchedulerLock(name = "scm_outbox_relay", lockAtLeastFor = "1s", lockAtMostFor = "1m")
+    @Scheduled(fixedDelayString = "${scm.relay.fixed-delay:2000}")  // 30s during development
+    @SchedulerLock(name = "scm_outbox_relay", lockAtLeastFor = "5s", lockAtMostFor = "1m")
     public void processOutbox() {
         int processedCount = 0;
         int failCount = 0;
@@ -47,25 +47,16 @@ public class InventoryOutboxRelay {
 
             try {
                 String envelope = createEventEnvelope(event);
-
-                // Synchronous send to ensure "At-Least-Once" delivery
                 kafkaTemplate.send(TOPIC, event.getAggregateId(), envelope)
                         .get(5, TimeUnit.SECONDS);
 
                 updateEventStatus(event.getId(), "PROCESSED");
                 processedCount++;
+                failCount = 0; // Reset fail count on success
             } catch (Exception ex) {
-                failCount++;
-                log.warn("Failed to relay event {} (Type: {}): {}",
-                        event.getId(), event.getType(), ex.getMessage());
-
-                updateEventStatus(event.getId(), "FAILED");
-
-                // Circuit breaker: stop the loop if Kafka is unreachable
-                if (failCount >= 3) {
-                    log.error("Relay halted: multiple consecutive Kafka failures.");
-                    break;
-                }
+                log.error("KAFKA DOWN: Aborting batch. Event {} will stay PENDING.", event.getId());
+                updateEventStatus(event.getId(), "PENDING");
+                return; // Kill the current scheduled execution immediately
             }
         }
     }
