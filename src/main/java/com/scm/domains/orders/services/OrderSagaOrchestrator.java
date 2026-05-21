@@ -1,6 +1,7 @@
 package com.scm.domains.orders.services;
 
 import com.fasterxml.jackson.databind.ObjectMapper;
+import com.scm.domains.inventory.services.InventoryService;
 import com.scm.domains.orders.entities.OrderOutbox;
 import com.scm.domains.orders.repositories.OrderOutboxRepository;
 import com.scm.domains.orders.repositories.OrderRepository;
@@ -17,17 +18,15 @@ import java.util.UUID;
 public class OrderSagaOrchestrator {
 
     private static final Logger log = LoggerFactory.getLogger(OrderSagaOrchestrator.class);
-
     private final OrderRepository orderRepository;
     private final OrderOutboxRepository outboxRepository;
     private final ObjectMapper objectMapper;
 
-    public OrderSagaOrchestrator(OrderRepository orderRepository,
-                                 OrderOutboxRepository outboxRepository,
-                                 ObjectMapper objectMapper) {
+    public OrderSagaOrchestrator(OrderRepository orderRepository, OrderOutboxRepository outboxRepository, ObjectMapper objectMapper) {
         this.orderRepository = orderRepository;
         this.outboxRepository = outboxRepository;
         this.objectMapper = objectMapper;
+
     }
 
     /**
@@ -94,6 +93,9 @@ public class OrderSagaOrchestrator {
         }
     }
 
-    private record OrderPaidPayload(String orderId) {}
-    private record OrderCancelledPayload(String orderId) {}
+    private record OrderPaidPayload(String orderId) {
+    }
+
+    private record OrderCancelledPayload(String orderId) {
+    }
 }
