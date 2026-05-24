@@ -55,11 +55,12 @@ public class OrderOutboxRelay {
                 kafkaTemplate.send(record).get(5, TimeUnit.SECONDS);
                 delivered = true;
                 log.info("Published [{}] for Order {}", event.getType(), event.getAggregateId());
-            }  catch (Exception ex) {
-            log.error("Kafka link failure: Stopping batch processing.");
-            outboxInternalService.updateFinalStatus(event.getId(), false);
-            return; // Don't even try the other 9 messages in the workQueue
-        }
+            } catch (Exception ex) {
+                log.error("Kafka link failure while publishing event type [{}] for Order ID [{}]: {}",
+                        event.getType(), event.getAggregateId(), ex.getMessage());
+                outboxInternalService.updateFinalStatus(event.getId(), false);
+                return;
+            }
 
             // Step 2: Update status in a separate transaction
             outboxInternalService.updateFinalStatus(event.getId(), delivered);

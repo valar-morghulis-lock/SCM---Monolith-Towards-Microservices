@@ -6,8 +6,8 @@ import com.scm.domains.inventory.services.InventoryService;
 import org.jooq.DSLContext;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
-import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.kafka.annotation.KafkaListener;
+import org.springframework.messaging.handler.annotation.Header; // Crucial for reading header tokens!
 import org.springframework.kafka.support.Acknowledgment;
 import org.springframework.stereotype.Component;
 
@@ -20,19 +20,30 @@ public class OrderEventsConsumer {
 
     private final InventoryService inventoryService;
     private final ObjectMapper objectMapper;
-    private DSLContext dsl;
+    private final DSLContext dsl;
 
-    public OrderEventsConsumer(InventoryService inventoryService, ObjectMapper objectMapper,DSLContext dsl ) {
+    public OrderEventsConsumer(InventoryService inventoryService, ObjectMapper objectMapper, DSLContext dsl) {
         this.inventoryService = inventoryService;
         this.objectMapper = objectMapper;
         this.dsl = dsl;
     }
 
     @KafkaListener(topics = "order-events", groupId = "scm-inventory-saga-group", containerFactory = "kafkaListenerContainerFactory")
-    public void handleOrderEvents(String message, Acknowledgment ack) {
-        log.warn("KAFKA CONSUMER: Received incoming event message from order-events topic");
+    public void handleOrderEvents(
+            String message,
+            @Header("eventType") String eventType, // Intercepts the record header sent by your relay
+            Acknowledgment ack
+    ) {
+        log.warn("KAFKA CONSUMER: Received incoming event message with type header [{}]", eventType);
 
         try {
+            // Early Gate: Only process the payload if it is an explicit cancellation request
+            if (!"ORDER_CANCELLED".equals(eventType)) {
+                log.info("KAFKA CONSUMER: Event type [{}] is not handled by inventory compensation. Skipping.", eventType);
+                ack.acknowledge(); // Acknowledge to advance past the unneeded event safely
+                return;
+            }
+
             OrderCancelledEvent event = objectMapper.readValue(message, OrderCancelledEvent.class);
 
             // Step 1: Parse the incoming Order ID string back into a structural UUID object
@@ -45,7 +56,7 @@ public class OrderEventsConsumer {
             // Step 3: Insert type-safely into the database
             boolean isNewEvent = dsl.insertInto(PROCESSED_EVENTS)
                     .set(PROCESSED_EVENTS.EVENT_ID, uniqueEventKey)
-                    .set(PROCESSED_EVENTS.PROCESSED_AT, java.time.OffsetDateTime.now()) // Perfectly matches OffsetDateTime!
+                    .set(PROCESSED_EVENTS.PROCESSED_AT, java.time.OffsetDateTime.now())
                     .onDuplicateKeyIgnore()
                     .execute() > 0;
 
