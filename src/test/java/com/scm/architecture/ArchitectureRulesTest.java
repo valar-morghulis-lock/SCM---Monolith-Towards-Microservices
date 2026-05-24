@@ -8,6 +8,7 @@ import org.springframework.kafka.core.KafkaTemplate;
 
 import static com.tngtech.archunit.library.Architectures.layeredArchitecture;
 import static com.tngtech.archunit.lang.syntax.ArchRuleDefinition.noClasses;
+import static com.tngtech.archunit.library.dependencies.SlicesRuleDefinition.slices;
 
 @AnalyzeClasses(packages = "com.scm")
 public class ArchitectureRulesTest {
@@ -22,11 +23,30 @@ public class ArchitectureRulesTest {
             .whereLayer("Controllers").mayNotBeAccessedByAnyLayer()
             .whereLayer("Services").mayOnlyBeAccessedByLayers("Controllers", "Services")
             .whereLayer("Repositories").mayOnlyBeAccessedByLayers("Services")
-            .allowEmptyShould(true); // Prevents builds failing if a domain lacks a layer (like Inventory repositories)
+            .allowEmptyShould(true);
+
+    /**
+     *  Bulletproof Slice Isolation
+     * Automatically ensures that com.scm.domains.order and com.scm.domains.inventory
+     * cannot see each other's classes or generated tables.
+     */
+    @ArchTest
+    static final ArchRule domains_must_be_strictly_isolated = slices()
+            .matching("com.scm.domains.(*)..")
+            .should().notDependOnEachOther();
+
+    /**
+     * Inverse rule
+     */
+    @ArchTest
+    static final ArchRule inventory_must_not_depend_on_order = noClasses()
+            .that().resideInAPackage("..domains.inventory..")
+            .should().dependOnClassesThat().resideInAPackage("..domains.order*..") // Catches both 'order' and 'orders'
+            .allowEmptyShould(true);
 
     @ArchTest
-    static final ArchRule domains_must_be_isolated_from_each_other = noClasses()
-            .that().resideInAPackage("..domains.orders..")
+    static final ArchRule order_must_not_depend_on_inventory = noClasses()
+            .that().resideInAPackage("..domains.order*..") // Catches both 'order' and 'orders'
             .should().dependOnClassesThat().resideInAPackage("..domains.inventory..")
             .allowEmptyShould(true);
 
