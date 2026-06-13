@@ -1,0 +1,34 @@
+# The entry point for all read-only dashboard data operations
+type Query {
+    # 📊 Inventory Domain (Executed via jOOQ)
+    globalStockSummary: [StockSummary!]!
+
+    # 📈 Orders Domain (Executed via Spring Data JPA)
+    recentOrdersMetrics(daysAgo: Int!): OrderMetrics!
+    recentOrdersList(limit: Int!): [OrderSummary!]!
+}
+
+# Immutable data objects returned by the Inventory Domain
+type StockSummary {
+    productId: ID!
+    productName: String!
+    sku: String!
+    totalQuantity: Int!
+    warehouseCount: Int!
+}
+
+# Aggregate metrics compiled by the Orders Domain
+type OrderMetrics {
+    totalOrdersCount: Int!
+    totalRevenue: Float!
+    cancelledOrdersCount: Int!
+}
+
+# Summary representations for individual ledger records
+type OrderSummary {
+    orderId: ID!
+    customerName: String!
+    status: String!
+    totalAmount: Float!
+    createdAt: String!
+}

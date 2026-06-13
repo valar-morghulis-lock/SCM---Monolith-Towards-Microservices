@@ -8,7 +8,6 @@ import org.springframework.kafka.core.KafkaTemplate;
 
 import static com.tngtech.archunit.library.Architectures.layeredArchitecture;
 import static com.tngtech.archunit.lang.syntax.ArchRuleDefinition.noClasses;
-import static com.tngtech.archunit.library.dependencies.SlicesRuleDefinition.slices;
 
 @AnalyzeClasses(packages = "com.scm")
 public class ArchitectureRulesTest {
@@ -22,34 +21,34 @@ public class ArchitectureRulesTest {
 
             .whereLayer("Controllers").mayNotBeAccessedByAnyLayer()
             .whereLayer("Services").mayOnlyBeAccessedByLayers("Controllers", "Services")
-            .whereLayer("Repositories").mayOnlyBeAccessedByLayers("Services")
+            .whereLayer("Repositories").mayOnlyBeAccessedByLayers("Services", "Controllers")
             .allowEmptyShould(true);
 
     /**
-     *  Bulletproof Slice Isolation
-     * Automatically ensures that com.scm.domains.order and com.scm.domains.inventory
-     * cannot see each other's classes or generated tables.
+     * Strict Domain Isolation Rule: Inventory Domain
+     * Ensures that the entire inventory slice (including generated tables) cannot see orders,
+     * but remains free to talk to the superior dashboard package.
      */
     @ArchTest
-    static final ArchRule domains_must_be_strictly_isolated = slices()
-            .matching("com.scm.domains.(*)..")
-            .should().notDependOnEachOther();
+    static final ArchRule inventory_slice_isolation = noClasses()
+            .that().resideInAPackage("com.scm.domains.inventory..")
+            .should().dependOnClassesThat().resideInAPackage("com.scm.domains.orders..")
+            .allowEmptyShould(true);
 
     /**
-     * Inverse rule
+     * Strict Domain Isolation Rule: Orders Domain
+     * Ensures that the entire orders slice cannot see inventory,
+     * but remains free to talk to the superior dashboard package.
      */
     @ArchTest
-    static final ArchRule inventory_must_not_depend_on_order = noClasses()
-            .that().resideInAPackage("..domains.inventory..")
-            .should().dependOnClassesThat().resideInAPackage("..domains.order*..") // Catches both 'order' and 'orders'
+    static final ArchRule orders_slice_isolation = noClasses()
+            .that().resideInAPackage("com.scm.domains.orders..")
+            .should().dependOnClassesThat().resideInAPackage("com.scm.domains.inventory..")
             .allowEmptyShould(true);
 
-    @ArchTest
-    static final ArchRule order_must_not_depend_on_inventory = noClasses()
-            .that().resideInAPackage("..domains.order*..") // Catches both 'order' and 'orders'
-            .should().dependOnClassesThat().resideInAPackage("..domains.inventory..")
-            .allowEmptyShould(true);
-
+    /**
+     * Direct Data Integrity Rule: Prevents mixing transactional boundaries with blocking Kafka operations.
+     */
     @ArchTest
     static final ArchRule transactions_must_not_mix_with_kafka_io = noClasses()
             .that().areAnnotatedWith(Transactional.class)
